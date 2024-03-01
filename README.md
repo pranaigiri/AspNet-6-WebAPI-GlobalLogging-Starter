@@ -27,19 +27,31 @@ To get started with this template, follow these steps:
 
 Detailed usage instructions and examples can be found in the project documentation.
 
-## Contributing
+## Configuration
 
-Contributions are welcome! Feel free to open issues or submit pull requests to help improve this template.
+In your `Program.cs` file, include the following code snippet to configure global logging with Serilog:
 
-## License
-
-This project is licensed under the [MIT License](LICENSE).
-
-## Acknowledgements
-
-Special thanks to the contributors and maintainers of the dependencies used in this template.
-
----
-
-Happy coding!
-
+```csharp
+builder.Host.UseSerilog((hostingContext, loggerConfiguration) =>
+{
+    loggerConfiguration
+        .MinimumLevel.Information()
+        .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+        .MinimumLevel.Override("System", LogEventLevel.Warning)
+        // Text Logs
+        .WriteTo.File(
+            path: "bin/Logs/log-.txt",
+            outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}",
+            rollingInterval: RollingInterval.Day,
+            retainedFileCountLimit: 7,
+            flushToDiskInterval: TimeSpan.FromSeconds(1))
+        // Structured Logs
+        .WriteTo.File(
+            path: "bin/Logs/structured-log-.json", // Global Logs Will Be Stored Here
+            formatter: new Serilog.Formatting.Json.JsonFormatter(),
+            rollingInterval: RollingInterval.Day,
+            retainedFileCountLimit: 7,
+            fileSizeLimitBytes: null,
+            shared: true,
+            flushToDiskInterval: TimeSpan.FromSeconds(1));
+});
